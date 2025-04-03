@@ -1,0 +1,1 @@
+"A user can test my file by running the program, and seeing if the game functions as intended. This means that it is fair (computer isn't super good or super bad), it can't be exploited, it works as intended,"
