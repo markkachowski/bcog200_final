@@ -1,1 +1,1 @@
-print("hello world")
+I sort of meshed the documentation file with the script file before the instructions were on canvas, so I have my functions listed, and then I have the explanations for how I will implement them and how they will be used, along with other ideas.
