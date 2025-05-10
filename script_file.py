@@ -1,5 +1,9 @@
+# I sort of lumped my outline for the project and description of functions into this file
+
 import tkinter
 import random
+import os
+from collections import namedtuple, Counter # see if theres another way of doing this
 
 root = tkinter.Tk()
 root.mainloop()
@@ -16,17 +20,51 @@ root.mainloop()
 "number of cards in the deck"
 
 
+# Card constants mostly the same from the card_demo, see if there is another weay of doing this
+Card = namedtuple("Card", ["suit", "value"])
+Hand = namedtuple("Hand", ["cards"])
+
+
+#2 players
+HAND_SIZE = 26
+
+# is there another way to do this?
+SUITS = ["♦️", "♥️", "♣️", "♠️"]
+FACE_CARDS = ["J", "Q", "K", "A"]
+FACE_CARD_VALUES = [11, 12, 13, 14]
+POSSIBLE_NUMBERS_FOR_CARDS = list(range(2, 11, 1))
+NUMERIC_CARDS = [str(i) for i in POSSIBLE_NUMBERS_FOR_CARDS]
+FACE_CARD_PLAY_VALUES = [1, 2, 3, 4]
+CHIP_VALUES = POSSIBLE_NUMBERS_FOR_CARDS + [11, 12, 13, 14]
 
 
 #function to create a deck
 def create_deck():
-    deck = []
-    range
+    deck = [
+        Card(suit, CHIP_VALUES)
+        for suit in SUITS
+    ]
+    return deck
+
+
+
 
 # deck shuffling function
 def shuffle_deck(deck):
     random.shuffle(deck)
     return deck
+
+def deal_hand(deck, hand_size=HAND_SIZE):
+    half_deck = deck[hand_size]
+
+
+    player_hand = Hand(
+        cards=half_deck)
+
+    computer_hand = Hand(
+        cards=half_deck)
+    print(player_hand)
+    return player_hand, computer_hand
 
 
 slappable_deck = ()
@@ -58,6 +96,7 @@ def player_turn():
 "when a slappable hand is detected, either the user or the computer can slap the deck"
 "once deck is slapped, add all cards in play to the winners deck and wait for them to start the next hand"
 def slap():
+    valid_slap = value[] in slappable_deck #check if there is a duplicate number in the slappable deck. Since there should only be 3 cards in the slappable deck at any time, and slaps are sandwiches or doubles, if there are two of the same value, stop everything and anyone can slap
 
 #false slap function
 "if the player slaps when there is no valid slap, they lose one card, and that card goes to the bottom of the deck, and does not effect the active deck"
@@ -86,3 +125,16 @@ for card in entire_card_deck:
 # bonus things
 "difficulties, easy normal or hard with quicker reaction times"
 "sound effect for slapping maybe"
+
+
+def main():
+    deck = create_deck()
+
+    deck = shuffle_deck(deck)
+    for i in range(NUM_HANDS):
+        hand, deck = deal_hand(deck)
+        report_info(hand, deck)
+
+
+if __name__ == "__main__":
+    main()

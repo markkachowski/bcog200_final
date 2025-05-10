@@ -1,1 +1,1 @@
-print("hello world")
+"Most of the outline is in my script file, I put that there before the assignment was on canvas. The only real input from the user is going to be the ability to place cards on the deck, or slap if there is a slap pattern"
