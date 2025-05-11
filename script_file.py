@@ -28,11 +28,10 @@ Card = namedtuple("Card", ["suit", "value"])
 
 slappable_deck = []
 
-player_deck = []
-computer_deck = []
+# player_deck = []
+# computer_deck = []
 
 # 2 players
-HAND_SIZE = 26
 
 # is there another way to do this?
 SUITS = ["♦️", "♥️", "♣️", "♠️"]
@@ -64,7 +63,7 @@ def deal_hand(deck):
     computer_deck = deck[start_deck_size:]
 
     print(
-        f"Player deck:{player_deck, len(player_deck)}, Computer deck: {computer_deck, len(computer_deck)}"
+        f"Player deck:{player_deck, len(player_deck)} \n Computer deck: {computer_deck, len(computer_deck)}"
     )  # check decks are equal and shuffled, get rid of this later you aren't allowed to look at your cards
     return player_deck, computer_deck
 
@@ -84,12 +83,15 @@ def deal_hand(deck):
 "3. if it is just a numbered card, user places 1 card on the deck"
 
 
-def player_turn(player_deck):
+def player_turn(player_deck, slappable_deck):
     ################## This is where things are gonna get funky, this function needs to have an input, (probably should be seperate from the slap input which I'm thinking should be spacebar), that allows you to put down a single card, UNLESS the previous card was a facecard
     ################## so not only does this function need to let the player put down one, or if necessary more than one card, it has to check if the last card was a face card
     ################## can you call a function inside of another function?, maybe I could have a seperate function checking if the last card placed was a face card
+    ################## needs to check card value after each card is placed to see if it is a face card, in case you place one while already putting down multiple for the computer's face card
     ################## if worse comes to worse I could make it the bar version where face cards are like any other cards, except jacks are slappable
-    pass
+    # card_debt_value = FACE_CARD_VALUES - 10
+    if Card.value == FACE_CARD_VALUES:
+        pass
 
 
 # computer turn function
@@ -103,13 +105,20 @@ def player_turn(player_deck):
 "once deck is slapped, add all cards in play to the winners deck and wait for them to start the next hand"
 
 
-def slap():
+def slap(slappable_deck):
     ##################### This function needs to run so it can check if there is a slappable card after each card is put down, but will that make the game run slower? what is the optimal way to implement something like this
     # slap list needs to add the most recently played card, and check if there is a duplicate card value in the slappable_deck list
     # if not then do nothing, if there is, there has to be some sort of computer slap function, or maybe that could just be a aprt of this function, that lets the computer know it should slap the deck
     # There should either be a seperate deck for all cards in play, or the function that checks for a slappable hand needs to only look at the three most recent additions to the slappable deck
     # valid_slap = value[] in slappable_deck
-    pass  # check if there is a duplicate number in the slappable deck. Since there should only be 3 cards in the slappable deck at any time, and slaps are sandwiches or doubles, if there are two of the same value, stop everything and anyone can slap
+    slap_pattern_trio = [
+        Card.value for card in slappable_deck[-3:]
+    ]  #!!!!!make sure this works and does last 3 not last 4!!!!
+    if len(slap_pattern_trio) != len(set(slap_pattern_trio)):
+        if input("") == (""):
+            print("yeehaw")
+    else:
+        pass  # check if there is a duplicate number in the slappable deck. Since there should only be 3 cards in the slappable deck at any time, and slaps are sandwiches or doubles, if there are two of the same value, stop everything and anyone can slap
 
 
 # false slap function
@@ -146,12 +155,9 @@ def main():
 
     shuffle_deck(deck)
     deal_hand(deck)
-    player_turn(player_deck)
+    player_deck, computer_deck = deal_hand(deck)
+    player_turn(player_deck, slappable_deck)
 
 
 if __name__ == "__main__":
     main()
-
-"""for i in range(NUM_HANDS):
-        hand, deck = deal_hand(deck)
-        report_info(hand, deck)"""
