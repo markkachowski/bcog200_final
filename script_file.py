@@ -1,16 +1,17 @@
 # I sort of lumped my outline for the project and description of functions into this file
 
+
 import time
-import tkinter
+import tkinter as tk
 import random
 import os
+from tkinter import filedialog
+from PIL import Image, ImageTk
 from collections import (
     namedtuple,
     Counter,
 )  ######################## see if theres another way of doing this
 
-# root = tkinter.Tk()
-# root.mainloop()
 
 # for the "slappable deck", you only need 3 cards at any given time
 ##################### have them in a list?
@@ -27,8 +28,8 @@ from collections import (
 ################################### Card constants mostly the same from the card_demo, see if there is another weay of doing this
 Card = namedtuple("Card", ["suit", "value"])
 
-slappable_deck = []
-SUITS = ["♦️", "♥️", "♣️", "♠️"]
+
+SUITS = ["♣️", "♦️", "♥️", "♠️"]
 FACE_CARDS = ["J", "Q", "K", "A"]
 FACE_CARD_VALUES = [11, 12, 13, 14]
 POSSIBLE_NUMBERS_FOR_CARDS = list(range(2, 15, 1))
@@ -36,28 +37,140 @@ POSSIBLE_NUMBERS_FOR_CARDS = list(range(2, 15, 1))
 FACE_CARD_PLAY_VALUES = [1, 2, 3, 4]
 # CHIP_VALUES = POSSIBLE_NUMBERS_FOR_CARDS + [11, 12, 13, 14] probably don't need
 
-
-# function to create a deck,
-# cards should probably be indexed
-def create_deck():
-    deck = [Card(suit, i) for suit in SUITS for i in POSSIBLE_NUMBERS_FOR_CARDS]
-    return deck
+"""root = tk.Tk()
 
 
-# deck shuffling function
-def shuffle_deck(deck):
-    deck = random.shuffle(deck)
-    return deck
+canvas = tk.Canvas(root, width=600, height=400)
+canvas.pack()
+
+place_card_button = tk.Button(root, text="Place Card", command=player_turn)
+place_card_button.pack(side="left", padx=100)
+
+slap_button = tk.Button(root, text="Slap", command=slap)
+slap_button.pack(side="right", padx=100)
+displayed_cards = []
+
+new_card = self.cards.pop()
+        self.displayed_cards.append(new_card)
+        if len(self.displayed_cards) > 3:
+            self.displayed_cards.pop(0)"""
+
+deck = [Card(suit, i) for i in POSSIBLE_NUMBERS_FOR_CARDS for suit in SUITS]
+card_image_index = {card: i for i, card in enumerate(deck)}
 
 
-# function to deal cards at the beginning of the game
-def deal_hand(deck):
-    start_deck_size = len(deck) // 2
-    player_deck = deck[:start_deck_size]
-    computer_deck = deck[start_deck_size:]
+class The_gui:
+    def __init__(self):
+        root = tk.Tk()
+        root.mainloop()
 
-    # print(f"Player deck:{player_deck, len(player_deck)} \n Computer deck: {computer_deck, len(computer_deck)}")
-    return player_deck, computer_deck
+    def update_display_card_placed(
+        self,
+    ):  # whenevr a card is put down call this function
+        self.canvas.delete("all")
+        self.card_images.clear()
+
+        for i, card in enumerate(self.displayed_cards):
+            path = card.image_filename()
+            if os.path.exists(path):
+                image_file = Image.open(path).resize((100, 150))
+                card_picture = ImageTk.PhotoImage(image_file)
+                self.card_images.append(card_picture)
+                self.canvas.create_image(
+                    120 * i + 50, 100, image=card_picture
+                )  # get this to overlap later
+
+    def update_display_slap(self):
+        self.canvas.delete("all")
+        self.card_images.clear()
+
+
+class The_game:
+    def __init__(self):
+        random.shuffle(self.deck)
+        self.deck = [
+            Card(suit, i) for i in POSSIBLE_NUMBERS_FOR_CARDS for suit in SUITS
+        ]
+        self.start_deck_size = len(self.deck) // 2
+        self.player_deck = self.deck[: self.start_deck_size]
+        self.computer_deck = self.deck[self.start_deck_size :]
+        self.slappable_deck = []
+        # print(f"Player deck:{player_deck, len(player_deck)} \n Computer deck: {computer_deck, len(computer_deck)}")
+
+    def player_turn(self):
+        self.removed_player_card = self.player_deck.pop()
+        self.slappable_deck.append(self.removed_player_card)
+        # for card in self.slappable_deck[-5:]:
+
+    def computer_turn(self):
+        self.removed_computer_card = self.computer_deck.pop()
+        self.slappable_deck.append(self.removed_computer_card)
+        The_gui.update_display_card_placed()
+
+    def check_face_card(self):  # this might need to be changed to just jacks
+        if len(self.slappable_deck) != 0:
+            self.most_recent_card = self.slappable_deck[-1]
+            self.face_card_list = []
+            if self.most_recent_card.value in FACE_CARD_VALUES:
+                self.is_face_card = True
+            else:
+                self.is_face_card = False
+        else:
+            pass
+
+    def slap(self):
+        self.slap_pattern_trio = []
+        self.last_three_cards = self.slappable_deck[-3:]
+        for card in self.last_three_cards:
+            self.slap_pattern_trio.append(card.value)
+        if len(self.slap_pattern_trio) != len(set(self.slap_pattern_trio)):
+            self.start_time = time.time()
+            self.computer_reaction_time = random.uniform(2, 4)
+            self.valid_slap = True
+            self.computer_slapped = False
+            self.player_slapped = False
+            if self.valid_slap == True and self.computer_slapped == False:
+                while not self.computer_slapped and not self.player_slapped:
+                    for card in self.slappable_deck:
+                        self.player_deck.insert(0, card)
+                    self.slappable_deck.clear()
+                    label.config(
+                        text=f"Yeehaw, you slapped! You have {len(self.player_deck)} cards now."
+                    )
+                    self.player_slapped = True
+                    The_gui.update_display_slap()
+            else:
+                self.removed_player_card = self.player_deck.pop()
+                self.slappable_deck.insert(0, self.removed_player_card)
+                label.config(text="False Slap: -1 Card!")
+                # display should not be updated here because the card is going to the bottom of the deck
+
+    def computer_slap(self):
+        if self.valid_slap and not self.player_slapped:
+            for card in self.slappable_deck:
+                self.computer_deck.insert(0, card)
+                self.slappable_deck.clear()
+                label.config(text="Computer Slapped!")
+
+    root.after(1000, computer_slap)
+
+    def gameplay_loopithink(self):
+        while len(self.player_deck) != 0 and len(self.computer_deck) != 0:
+            self.slap()
+            self.is_face_card = self.check_face_card()
+            self.player_turn()
+            self.slap()
+            self.is_face_card = self.check_face_card()
+            self.computer_turn()
+        if len(self.computer_deck) == 0:
+            print("You won!")
+        else:
+            print("You lost!")
+
+
+if __name__ == "__main__":
+    game = The_game()
+    game.gameplay_loopithink()
 
 
 # player turn function
@@ -67,141 +180,22 @@ def deal_hand(deck):
 "3. if it is just a numbered card, user places 1 card on the deck"
 
 
-def player_turn(player_deck, slappable_deck):
-    ################## This is where things are gonna get funky, this function needs to have an input, (probably should be seperate from the slap input which I'm thinking should be spacebar), that allows you to put down a single card, UNLESS the previous card was a facecard
-    ################## so not only does this function need to let the player put down one, or if necessary more than one card, it has to check if the last card was a face card
-    ################## can you call a function inside of another function?, maybe I could have a seperate function checking if the last card placed was a face card
-    ################## needs to check card value after each card is placed to see if it is a face card, in case you place one while already putting down multiple for the computer's face card
-    ################## if worse comes to worse I could make it the bar version where face cards are like any other cards, except jacks are slappable
-    # card_debt_value = FACE_CARD_VALUES - 10
-    # there is definitely a better way to do this
-    ################### should placing a card be its own function?
-
-    place_card = input("")
-    if place_card == "":
-        print("yeehaw you placed a card")
-        removed_player_card = player_deck.pop()
-        slappable_deck.append(removed_player_card)
-
-    for card in slappable_deck[-5:]:
-        print(card)
-    return player_deck, slappable_deck
-
-
 # computer turn function
 "same as the player turn function, except that if the computer slaps, there will be a built in time delay from 0.2 seconds to 0.5 seconds"
 "delay can change after testing it if its too easy or too hard"
-
-
-def computer_turn(computer_deck, slappable_deck):
-
-    computer_reaction_time = random.uniform(0.25, 0.5)
-    time.sleep(computer_reaction_time)
-    removed_computer_card = computer_deck.pop()
-    slappable_deck.append(removed_computer_card)
-    print("\nComputer placed a card")
-    for card in slappable_deck[-5:]:
-        print(card)
-    return computer_deck, slappable_deck
-
+# Probably don't even need this anymore
+# else: #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+# print("Computer slapped!")
+# for card in self.slappable_deck:
+#   self.computer_deck.insert(0, card)
+# self.slappable_deck.clear()
 
 # slap function/deck check function (This and the slap function could possibly be combined into one for the purposes of testing, and then once the GUI is developed it can go back to being seperate)
 "check the deck after each turn is taken to see if there is a slappable hand"
 "when a slappable hand is detected, either the user or the computer can slap the deck"
 "once deck is slapped, add all cards in play to the winners deck and wait for them to start the next hand"
 
-
-def check_for_slap(slappable_deck):
-    slap_pattern_trio = []
-    last_three_cards = slappable_deck[-3:]
-    for card in last_three_cards:
-        slap_pattern_trio.append(card.value)
-    if len(slap_pattern_trio) != len(set(slap_pattern_trio)):
-        print("slap detected")
-        valid_slap = True
-        return slappable_deck, valid_slap
-    else:
-        valid_slap = False
-        return valid_slap
-
-
-def slap(player_deck, computer_deck, slappable_deck):
-    ##################### This function needs to run so it can check if there is a slappable card after each card is put down, but will that make the game run slower? what is the optimal way to implement something like this
-    # slap list needs to add the most recently played card, and check if there is a duplicate card value in the slappable_deck list
-    # if not then do nothing, if there is, there has to be some sort of computer slap function, or maybe that could just be a aprt of this function, that lets the computer know it should slap the deck
-    # There should either be a seperate deck for all cards in play, or the function that checks for a slappable hand needs to only look at the three most recent additions to the slappable deck
-    # valid_slap = value[] in slappable_deck
-    slap_pattern_trio = []
-    last_three_cards = slappable_deck[-3:]
-    for card in last_three_cards:
-        slap_pattern_trio.append(card.value)
-    if len(slap_pattern_trio) != len(set(slap_pattern_trio)):
-        print("slap detected")
-        start_time = time.time()
-        computer_reaction_time = random.uniform(2, 4)
-        valid_slap = True
-        computer_slapped = False
-        while valid_slap == True and computer_slapped == False:
-            if time.time() - start_time >= computer_reaction_time:
-                computer_slapped = True
-                print("Computer slapped!")
-                for card in slappable_deck:
-                    computer_deck.insert(0, card)
-                slappable_deck.clear()
-                return player_deck, computer_deck, slappable_deck
-            wip_slap = input("Type slap to slap: ")
-            while not computer_slapped:
-                if wip_slap == "slap":
-                    for card in slappable_deck:
-                        player_deck.insert(0, card)
-                    slappable_deck.clear()
-                    print(
-                        f"Yeehaw, you slapped! You have {len(player_deck)} cards now."
-                    )
-                    return player_deck, slappable_deck, valid_slap
-                if wip_slap != "slap":
-                    print("what")
-                    break
-            else:
-                print("Computer slapped!")
-                for card in slappable_deck:
-                    computer_deck.insert(0, card)
-                slappable_deck.clear()  # line isn't clearing deck?
-                return computer_deck, slappable_deck, valid_slap
-    else:
-        pass  # same card keeps being put down after a slap?
-
-
-# false slap function
-"if the player slaps when there is no valid slap, they lose one card, and that card goes to the bottom of the deck, and does not effect the active deck"
-
-# face card function
-"if a face card is detected at the top of the deck, the next player must put down the corresponding number of cards in a row, 1 for a jack 2 for a queen, 3 for a king, 4 for an ace"
-
-# for card in entire_card_deck:
-# pass
-
-# class for computer?
-
-# gui for the game
-"needs to have at least 3 cards showing for the deck that is in play"
-"probably would be nice to show more in case there is a face card where there would be up to 5 cards sort of active"
-"maybe a number counter or other cards as a visual?"
-"need a slap button"
-
-# win/lose function(s)
-"functions that end the game when the player either has all the cards, or runs out of all cards"
-"check the number of cards currently in the player's deck"
-"if the number of cards reaches 52, end the game and display a winning message"
-"if the number of cards reaches 0, end the game, display a losing message"
-
-
-# bonus things
-"difficulties, easy normal or hard with quicker reaction times"
-"sound effect for slapping maybe"
-
-
-def main():
+"""def main():
     deck = create_deck()
 
     shuffle_deck(deck)
@@ -209,9 +203,11 @@ def main():
     player_deck, computer_deck = deal_hand(deck)
     while len(player_deck) != 0 and len(computer_deck) != 0:
         slap(player_deck, computer_deck, slappable_deck)
-        player_turn(player_deck, slappable_deck)
+        is_face_card = check_face_card(slappable_deck)
+        player_turn(player_deck, slappable_deck, is_face_card)
         slap(player_deck, computer_deck, slappable_deck)
-        computer_turn(computer_deck, slappable_deck)
+        is_face_card = check_face_card(slappable_deck)
+        computer_turn(computer_deck, slappable_deck, is_face_card)
     if len(computer_deck) == 0:
         print("You won!")
     else:
@@ -222,89 +218,49 @@ if __name__ == "__main__":
     main()
 
 
-# Face card checking code, maybe will be its own function
+# Face card checking code, maybe will be its own function"""
 
-"""for card in slappable_deck[-1]:
-        if Card.value == 11:
+"""
+
+# All these need to take the turn as normal unless another face card is put down, in which case it then goes to the computers turn
+def check_face_card(slappable_deck):
+    for card in slappable_deck[-1]:
+        if card.value == 11:
+            for value in FACE_CARD_PLAY_VALUES[0]:
+                print("Jack detected")
+                continue
+        elif card.value == 12:
             for value in FACE_CARD_PLAY_VALUES[
                 1
-            ]:  # All these need to take the turn as normal unless another face card is put down, in which case it then goes to the computers turn
-                print("Jack detected")
-        elif Card.value == 12:
-            for value in FACE_CARD_PLAY_VALUES[1]:
-                print("Queen detected")
-        elif Card.value == 13:
+            ]:  # make a new temporary list, put the cards in both, loop the input for putting down cards until the list length equals FACE_CARD_PLAY_VALUES[i]?
+                print(
+                    "Queen detected"
+                )  # if another face card is put down, clear or detroy the temporary list and make a new one, and also make it the next person's turn
+                continue
+        elif card.value == 13:
             for value in FACE_CARD_PLAY_VALUES[2]:
                 print("King detected")
-        elif Card.value == 14:
+                continue
+        elif card.value == 14:
             for value in FACE_CARD_PLAY_VALUES[3]:
                 print("Ace detected")
+                continue
         else:
-            "take turn as normal: put down one card, check for a slap, and then go to the computer"""
+            print(
+                "take turn as normal: put down one card, check for a slap, and then go to the computer"
+            )"""
 
+"""
+def create_the_gui(root):
+    root.title("Slaps")
 
-# GUI
-####################### figure out how to assign each card image png to each generated card in the code
+    # GUI setup
+    canvas = tk.Canvas(root, width=600, height=400)
+    canvas.pack()
 
-"""main_frame = tk.Frame(main_window)
-main_frame.grid()
+    place_card_button = tk.Button(root, text="Place Card", command=place_card)
+    place_card_button.pack(side="left", padx=100)
 
-hello_world_label = tk.Label(main_frame, text="Hello World!")
-hello_world_label.grid(column=0, row=0)
-
-slap_button = tk.Button(main_frame, text="SLAP!", command=slap)
-slap_button.grid(column=1, row=0)"""
-
-
-# Saving these in case i need to use them again later
-"""def check_for_slap(slappable_deck):
-    slap_pattern_trio = []
-    last_three_cards = slappable_deck[-3:]
-    for card in last_three_cards:
-        slap_pattern_trio.append(card.value)
-    if len(slap_pattern_trio) != len(set(slap_pattern_trio)):
-        print("slap detected")
-        valid_slap = True
-        return slappable_deck, valid_slap
-    else:
-        valid_slap = False
-        return valid_slap
-
-def slap(player_deck, computer_deck, slappable_deck, valid_slap):
-    ##################### This function needs to run so it can check if there is a slappable card after each card is put down, but will that make the game run slower? what is the optimal way to implement something like this
-    # slap list needs to add the most recently played card, and check if there is a duplicate card value in the slappable_deck list
-    # if not then do nothing, if there is, there has to be some sort of computer slap function, or maybe that could just be a aprt of this function, that lets the computer know it should slap the deck
-    # There should either be a seperate deck for all cards in play, or the function that checks for a slappable hand needs to only look at the three most recent additions to the slappable deck
-    # valid_slap = value[] in slappable_deck
-
-    while valid_slap == True:
-        wip_slap = input("Type slap to slap: ")
-        if wip_slap == "slap":
-            print("yeehaw you slapped")
-            player_deck.append(slappable_deck)
-            slappable_deck.clear
-            return player_deck, slappable_deck, valid_slap
-        else:
-            time.sleep(2)  # remember to set this to the computer delay variable later
-            print("Computer slapped!")
-            computer_deck.append(slappable_deck)
-            slappable_deck.clear
-            return computer_deck, slappable_deck, valid_slap
-    else:
-        pass  # check if there is a duplicate number in the slappable deck. Since there should only be 3 cards in the slappable deck at any time, and slaps are sandwiches or doubles, if there are two of the same value, stop everything and anyone can slap
-
-        
-        def main():
-    deck = create_deck()
-
-    shuffle_deck(deck)
-    deal_hand(deck)
-    player_deck, computer_deck = deal_hand(deck)
-    while len(player_deck) != 0:
-        valid_slap = check_for_slap(slappable_deck)
-        slap(player_deck, computer_deck, slappable_deck, valid_slap)
-        player_turn(player_deck, slappable_deck, valid_slap)
-        valid_slap = check_for_slap(slappable_deck)
-        slap(player_deck, computer_deck, slappable_deck, valid_slap)
-        computer_turn(computer_deck, slappable_deck, valid_slap)
-        """
+    slap_button = tk.Button(root, text="Slap", command=slap)
+    slap_button.pack(side="right", padx=100)
+    displayed_cards = []"""
