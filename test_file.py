@@ -40,8 +40,11 @@ FACE_CARD_PLAY_VALUES = [1, 2, 3, 4]
 # function to create a deck,
 # cards should probably be indexed
 def create_deck():
-    deck = [Card(suit, i) for i in POSSIBLE_NUMBERS_FOR_CARDS for suit in SUITS]
+    # deck = [Card(suit, i) for i in POSSIBLE_NUMBERS_FOR_CARDS for suit in SUITS]
     # print(deck)
+    deck = [Card(suit, i) for i in POSSIBLE_NUMBERS_FOR_CARDS for suit in SUITS]
+    deck = {card: i + 1 for i, card in enumerate(deck)}
+
     return deck
 
 
