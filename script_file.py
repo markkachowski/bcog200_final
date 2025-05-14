@@ -39,6 +39,8 @@ FACE_CARD_PLAY_VALUES = [1, 2, 3, 4]
 # Error time
 
 # cards are being appended somewhere else or deleted, and not being added to the player and computer decks after a slap
+# one card is disappearing after a player slap, most recent one?
+# all cards in the slappable deck disappear after a computer slap
 
 deck = [
     Card(suit, value, index)
@@ -63,16 +65,16 @@ class GUI:
         self.card_label = tk.Label(root, text="")
         self.card_label.pack(side="bottom", pady=150)
 
-        self.player_card_count_label = tk.Label(root, text="")
-        self.player_card_count_label.pack(side="top", padx=100)
+        self.card_count_label = tk.Label(root, text="")
+        self.card_count_label.pack(side="top")
 
         place_card_button = tk.Button(
             root, text="Place Card", command=self.player_place_card
         )
-        place_card_button.pack(side="left", padx=100)  # make bigger?
+        place_card_button.pack(side="left", padx=200)  # make bigger?
 
         slap_button = tk.Button(root, text="Slap", command=self.update_display_slap)
-        slap_button.pack(side="right", padx=100)  # make bigger later
+        slap_button.pack(side="right", padx=200)  # make bigger later
         self.displayed_cards = self.slaps.slappable_deck
         self.card_images = []
 
@@ -85,16 +87,16 @@ class GUI:
             for card in self.slaps.slappable_deck[-1]:
                 self.placed_card_index = str(card)
             self.card_label.config(text=self.placed_card_index)
-            self.player_card_count_label.config(
-                text=f"Your cards = {len(self.slaps.player_deck)}"
+            self.card_count_label.config(
+                text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
             )
             self.actions_label.config(text="You placed a card.")
             self.slaps.check_for_slap()
             if self.slaps.valid_slap == False and self.slaps.player_move == False:
-                self.computer_place_time = random.randint(700, 1200)
+                self.computer_place_time = random.randint(550, 1100)
                 self.canvas.after(self.computer_place_time, self.computer_place_card)
             elif self.slaps.valid_slap:
-                self.computer_slap_time = random.randint(1700, 2400)
+                self.computer_slap_time = random.randint(1100, 2200)
                 self.canvas.after(
                     self.computer_slap_time, self.update_display_computer_slap
                 )
@@ -108,6 +110,9 @@ class GUI:
             self.placed_card_index = str(card)
         self.card_label.config(text=self.placed_card_index)
         self.actions_label.config(text="Computer placed a card.")
+        self.card_count_label.config(
+            text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
+        )
         self.slaps.check_for_slap()
         if self.slaps.valid_slap:
             self.computer_slap_time = random.randint(1700, 2400)
@@ -134,14 +139,23 @@ class GUI:
                 )  # get this to overlap later # change if this is a weird size
 
     def update_display_slap(self):
+        self.slaps.check_for_slap()
         if self.slaps.valid_slap == True:
             self.slaps.slap()
             self.canvas.delete("all")
             self.displayed_cards.clear()
-            self.actions_label.config(text="Yeehaw, you slapped!")
+            self.actions_label.config(
+                text="You slapped!\nSince you won the last hand it is now your turn."
+            )
+            self.card_count_label.config(
+                text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}\nmost recent card = {self.slaps.player_deck[0]}"
+            )
         elif self.slaps.valid_slap == False:
             self.slaps.slap()
             self.actions_label.config(text="False slap, -1 Card!")
+            self.card_count_label.config(
+                text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
+            )
 
     def update_display_computer_slap(self):
         if self.slaps.valid_slap == True:
@@ -151,6 +165,9 @@ class GUI:
             self.actions_label.config(text="Computer Slapped!")
             self.computer_slap_recover_time = random.randint(1700, 2400)
             self.canvas.after(self.computer_slap_recover_time, self.computer_place_card)
+            self.card_count_label.config(
+                text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
+            )
 
 
 class Game:
@@ -186,6 +203,7 @@ class Game:
             self.player_slapped = False
             self.computer_slapped = False
 
+    # might make the game go on for a really long time depending on
     def check_face_card(self):  # this might need to be changed to just jacks
         if len(self.slappable_deck) != 0:
             self.most_recent_card = self.slappable_deck[-1]
@@ -216,7 +234,7 @@ class Game:
                 self.player_slapped = True
                 self.player_move = True
                 self.valid_slap = False
-        if self.valid_slap == False:
+        elif self.valid_slap == False:
             self.removed_player_card = self.player_deck.pop()
             self.slappable_deck.insert(0, self.removed_player_card)
             self.valid_slap = False
@@ -225,7 +243,7 @@ class Game:
         if self.valid_slap and not self.player_slapped:
             for card in self.slappable_deck:
                 self.computer_deck.insert(0, card)
-                self.slappable_deck.clear()
+            self.slappable_deck.clear()
             self.player_move = False
             self.valid_slap = False
             self.computer_slapped = True
@@ -326,18 +344,3 @@ def check_face_card(slappable_deck):
             print(
                 "take turn as normal: put down one card, check for a slap, and then go to the computer"
             )"""
-
-"""
-def create_the_gui(root):
-    root.title("Slaps")
-
-    # GUI setup
-    canvas = tk.Canvas(root, width=600, height=400)
-    canvas.pack()
-
-    place_card_button = tk.Button(root, text="Place Card", command=place_card)
-    place_card_button.pack(side="left", padx=100)
-
-    slap_button = tk.Button(root, text="Slap", command=slap)
-    slap_button.pack(side="right", padx=100)
-    displayed_cards = []"""
