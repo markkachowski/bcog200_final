@@ -39,10 +39,17 @@ FACE_CARD_PLAY_VALUES = [1, 2, 3, 4]
 
 # computer put down 5 cards for an ace instead of 4 and despite winning i didnt win
 # logic for me placing a jack was right but the display updated too quick
+# winning with face cards doesn't update the screen
+# computer doesn't slap when double jacks are placed
 
 ######### Go through and fix all the logic
 
 
+# things to add
+# win/lose messages
+# make gui look nice
+# player fc functionality
+# weird things that don't quite work right
 deck = [
     Card(suit, value, index)
     for index, (value, suit) in enumerate(
@@ -59,22 +66,40 @@ class GUI:
         )  # change if this is a weird size
         self.canvas.pack()
         # add instructions at the start
-        self.actions_label = tk.Label(root, text="")
+        self.actions_label = tk.Label(
+            root,
+            text="#######Rules#######\nThe objective of Slaps is to get all the cards in the deck.\nYou can get cards by slapping anytime 2 of\n the same number card are played in a row, or if a sandwich of 2 of\nthe same card occur. You can sometimes win by placing a face card as well. When you place a\nface card, the next player has a certain number of chances to place a face card as well:\n1 card for a jack, 2 for a queen, 3 for king, 4 for ace. If the player does not place a face card,\nthen you win the hand. If they do place one, then you must put down the corresponding number of cards\nand hope for a face card or a slap, otherwise you will lose that hand. You can slap at any time, but if\n there is not a valid slap, you will lose a card so be careful before you slap.",
+            font=("Ariel", 11, "bold"),
+        )
         self.actions_label.pack(side="bottom", pady=50)  # Change
 
         # To make sure the card being put down is actually the card displayed, delete later
-        self.card_label = tk.Label(root, text="")
-        self.card_label.pack(side="bottom", pady=150)
+        # self.card_label = tk.Label(
+        #    root,
+        # )
+        # self.card_label.pack(side="bottom", pady=150)
 
         self.card_count_label = tk.Label(root, text="")
         self.card_count_label.pack(side="top")
 
         place_card_button = tk.Button(
-            root, text="Place Card", command=self.player_place_card
+            root,
+            text="Place Card",
+            command=self.player_place_card,
+            font=("Ariel", 16, "bold"),
+            padx=25,
+            pady=10,
         )
         place_card_button.pack(side="left", padx=200)  # make bigger?
 
-        slap_button = tk.Button(root, text="Slap", command=self.update_display_slap)
+        slap_button = tk.Button(
+            root,
+            text="Slap",
+            command=self.update_display_slap,
+            font=("Ariel", 16, "bold"),
+            padx=25,
+            pady=10,
+        )
         slap_button.pack(side="right", padx=200)  # make bigger later
         self.displayed_cards = self.slaps.slappable_deck
         self.card_images = []
@@ -82,31 +107,23 @@ class GUI:
     # def display_card_values(self):
 
     def player_place_card(self):
-        if self.slaps.player_move and not self.slaps.player_fc_move:
+        if self.slaps.player_move:
             self.slaps.player_turn()
             self.update_display_card_placed()
             for card in self.slaps.slappable_deck[-1]:
                 self.placed_card_index = str(card)
-            self.card_label.config(text=self.placed_card_index)
+            # self.card_label.config(text=self.placed_card_index)
             self.card_count_label.config(
                 text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
             )
             self.actions_label.config(text="You placed a card.")
             self.slaps.check_for_slap()
-            self.slaps.check_face_card()
             if self.slaps.valid_slap:
-                self.computer_slap_time = random.randint(1100, 2200)
+                self.computer_slap_time = random.randint(700, 1100)
                 self.canvas.after(
                     self.computer_slap_time, self.update_display_computer_slap
                 )
-            elif self.slaps.is_face_card:
-                self.comp_card_delay = random.randint(550, 1100)
-                self.canvas.after(self.comp_card_delay, self.computer_turn_fc)
-            elif (
-                self.slaps.valid_slap == False
-                and self.slaps.player_move == False
-                and not self.slaps.is_face_card
-            ):
+            elif self.slaps.valid_slap == False and self.slaps.player_move == False:
                 self.computer_place_time = random.randint(550, 1100)
                 self.canvas.after(self.computer_place_time, self.computer_place_card)
 
@@ -124,7 +141,7 @@ class GUI:
         #    self.update_display_card_placed()
         for card in self.slaps.slappable_deck[-1]:
             self.placed_card_index = str(card)
-        self.card_label.config(text=self.placed_card_index)
+        # self.card_label.config(text=self.placed_card_index)
         self.actions_label.config(text="Computer placed a card.")
         self.card_count_label.config(
             text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
@@ -151,7 +168,7 @@ class GUI:
                 self.card_picture = ImageTk.PhotoImage(self.image_file)
                 self.card_images.append(self.card_picture)
                 self.canvas.create_image(
-                    120 * i + 50, 100, image=self.card_picture
+                    120 * i + 150, 100, image=self.card_picture
                 )  # get this to overlap later # change if this is a weird size
 
     def update_display_slap(self):
@@ -185,7 +202,123 @@ class GUI:
                 text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
             )
 
-    def end_computer_turn(self):
+
+class Game:
+    def __init__(self):
+
+        self.deck = [
+            Card(suit, value, index)
+            for index, (value, suit) in enumerate(
+                (value, suit) for value in POSSIBLE_NUMBERS_FOR_CARDS for suit in SUITS
+            )
+        ]
+        random.shuffle(self.deck)
+        self.start_deck_size = len(self.deck) // 2
+        self.player_deck = self.deck[: self.start_deck_size]
+        self.computer_deck = self.deck[self.start_deck_size :]
+        self.slappable_deck = []
+        self.valid_slap = False
+        self.player_move = True
+        self.computer_move = False
+
+    def check_for_slap(self):
+        self.slap_pattern_trio = []
+        self.last_three_cards = self.slappable_deck[-3:]
+        self.most_recent_card = self.slappable_deck[-1]
+        for card in self.last_three_cards:
+            self.slap_pattern_trio.append(card.value)
+        if len(self.slap_pattern_trio) != len(set(self.slap_pattern_trio)):
+            self.valid_slap = True
+            self.computer_slapped = False
+            self.player_slapped = False
+        elif self.most_recent_card.value == FACE_CARD_VALUES[0]:
+            self.valid_slap = True
+            self.computer_slapped = False
+            self.player_slapped = False
+
+    def player_turn(self):
+        if self.player_move:
+            self.removed_player_card = self.player_deck.pop()
+            self.slappable_deck.append(self.removed_player_card)
+            self.player_move = False
+            self.computer_move = True
+            self.player_slapped = False
+            self.computer_slapped = False
+
+    def computer_turn(self):
+        if not self.player_move:
+            self.removed_computer_card = self.computer_deck.pop()
+            self.slappable_deck.append(self.removed_computer_card)
+            self.player_move = True
+            self.computer_move = False
+
+    def slap(self):
+        if self.valid_slap == True and self.computer_slapped == False:
+            while not self.computer_slapped and not self.player_slapped:
+                for card in self.slappable_deck:
+                    self.player_deck.insert(0, card)
+                self.slappable_deck.clear()
+                self.player_slapped = True
+                self.player_move = True
+                self.computer_move = False
+                self.valid_slap = False
+
+        elif self.valid_slap == False:
+            self.removed_player_card = self.player_deck.pop()
+            self.slappable_deck.insert(0, self.removed_player_card)
+            self.valid_slap = False
+
+    def computer_slap(self):
+        if self.valid_slap and not self.player_slapped:
+            for card in self.slappable_deck:
+                self.computer_deck.insert(0, card)
+            self.slappable_deck.clear()
+            self.player_move = False
+            self.computer_move = True
+            self.valid_slap = False
+            self.computer_slapped = True
+
+    def gameplay_loopithink(self):
+        while len(self.player_deck) != 0 and len(self.computer_deck) != 0:
+            self.check_for_slap()
+            self.player_turn()
+            self.check_for_slap()
+            self.computer_turn()
+        if len(self.computer_deck) == 0:
+            self.actions_label.config(text="You won!")
+        elif len(self.player_deck) == 0:
+            self.actions_label.config(text="You lost!")
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    slaps = GUI(root)
+    root.mainloop()
+
+
+# player turn function
+"the turn that the user takes, check what the current card on the top of the deck is, then decide what to do."
+"1. if top card is a face card, loop putting down cards until the correct number is reached, or the user puts down a face card"
+"2. if out of cards then end the game"
+"3. if it is just a numbered card, user places 1 card on the deck"
+
+
+# computer turn function
+"same as the player turn function, except that if the computer slaps, there will be a built in time delay from 0.2 seconds to 0.5 seconds"
+"delay can change after testing it if its too easy or too hard"
+# Probably don't even need this anymore
+# else: #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+# print("Computer slapped!")
+# for card in self.slappable_deck:
+#   self.computer_deck.insert(0, card)
+# self.slappable_deck.clear()
+
+# slap function/deck check function (This and the slap function could possibly be combined into one for the purposes of testing, and then once the GUI is developed it can go back to being seperate)
+"check the deck after each turn is taken to see if there is a slappable hand"
+"when a slappable hand is detected, either the user or the computer can slap the deck"
+"once deck is slapped, add all cards in play to the winners deck and wait for them to start the next hand"
+
+"""    def end_computer_turn(self):
         self.slaps.check_for_slap()
         self.canvas.after(self.comp_card_delay, self.update_display_card_placed())
         self.card_count_label.config(
@@ -193,6 +326,7 @@ class GUI:
         )
         self.slaps.computer_move = False
         self.slaps.player_move = True
+        self.update_display_card_placed()
         self.actions_label.config(text=f"You won this hand with face cards!")
 
     def computer_turn_fc(self, step=0):
@@ -250,85 +384,8 @@ class GUI:
                 self.canvas.after(
                     self.comp_card_delay, lambda: self.end_computer_turn()
                 )
-
-
-class Game:
-    def __init__(self):
-
-        self.deck = [
-            Card(suit, value, index)
-            for index, (value, suit) in enumerate(
-                (value, suit) for value in POSSIBLE_NUMBERS_FOR_CARDS for suit in SUITS
-            )
-        ]
-        random.shuffle(self.deck)
-        self.start_deck_size = len(self.deck) // 2
-        self.player_deck = self.deck[: self.start_deck_size]
-        self.computer_deck = self.deck[self.start_deck_size :]
-        self.slappable_deck = []
-        self.valid_slap = False
-        self.player_move = True
-        self.computer_move = False
-        self.is_face_card = False
-        self.is_jack_rule = False
-        self.is_queen_rule = False
-        self.is_king_rule = False
-        self.is_ace_rule = False
-        self.player_fc_move = False
-
-    def check_for_slap(self):
-        self.slap_pattern_trio = []
-        self.last_three_cards = self.slappable_deck[-3:]
-        for card in self.last_three_cards:
-            self.slap_pattern_trio.append(card.value)
-        if len(self.slap_pattern_trio) != len(set(self.slap_pattern_trio)):
-            self.valid_slap = True
-            self.computer_slapped = False
-            self.player_slapped = False
-
-    def check_face_card(self):
-        self.most_recent_card = self.slappable_deck[-1]
-        if self.most_recent_card.value in FACE_CARD_VALUES:
-            self.is_face_card = True
-            if self.most_recent_card.value == 11:
-                self.is_jack_rule = True
-            elif self.most_recent_card.value == 12:
-                self.is_queen_rule = True
-            elif self.most_recent_card.value == 13:
-                self.is_king_rule = True
-            elif self.most_recent_card.value == 14:
-                self.is_ace_rule = True
-        else:
-            self.is_face_card = False
-
-    def check_face_card_type(self):
-        # should an if statement be here?
-        if self.most_recent_card.value == 11:
-            self.is_jack_rule = True
-        elif self.most_recent_card.value == 12:
-            self.is_queen_rule = True
-        elif self.most_recent_card.value == 13:
-            self.is_king_rule = True
-        elif self.most_recent_card.value == 14:
-            self.is_ace_rule = True
-
-    def player_turn(self):
-        if self.player_move:
-            self.removed_player_card = self.player_deck.pop()
-            self.slappable_deck.append(self.removed_player_card)
-            self.player_move = False
-            self.computer_move = True
-            self.player_slapped = False
-            self.computer_slapped = False
-
-    def computer_turn(self):
-        if not self.player_move:
-            self.removed_computer_card = self.computer_deck.pop()
-            self.slappable_deck.append(self.removed_computer_card)
-            self.player_move = True
-            self.computer_move = False
-
-    def comp_fc_clean_loop(self):
+                
+                    def comp_fc_clean_loop(self):
         # self.is_face_card = False
         if self.computer_deck:
             self.removed_computer_card = self.computer_deck.pop()
@@ -372,185 +429,29 @@ class Game:
                 self.is_queen_rule = False
                 self.is_king_rule = False
                 self.is_ace_rule = False
-
-    def slap(self):
-        if self.valid_slap == True and self.computer_slapped == False:
-            while not self.computer_slapped and not self.player_slapped:
-                for card in self.slappable_deck:
-                    self.player_deck.insert(0, card)
-                self.slappable_deck.clear()
-                self.player_slapped = True
-                self.player_move = True
-                self.computer_move = False
-                self.valid_slap = False
-                self.is_jack_rule = False
-                self.is_queen_rule = False
-                self.is_king_rule = False
-                self.is_ace_rule = False
-                self.player_fc_move = False
-        elif self.valid_slap == False:
-            self.removed_player_card = self.player_deck.pop()
-            self.slappable_deck.insert(0, self.removed_player_card)
-            self.valid_slap = False
-
-    def computer_slap(self):
-        if self.valid_slap and not self.player_slapped:
-            for card in self.slappable_deck:
-                self.computer_deck.insert(0, card)
-            self.slappable_deck.clear()
-            self.player_move = False
-            self.computer_move = True
-            self.valid_slap = False
-            self.computer_slapped = True
-            self.is_jack_rule = False
-            self.is_queen_rule = False
-            self.is_king_rule = False
-            self.is_ace_rule = False
-            self.player_fc_move = False
-
-    def gameplay_loopithink(self):
-        while len(self.player_deck) != 0 and len(self.computer_deck) != 0:
-            self.check_for_slap()
-            self.is_face_card = self.check_face_card()
-            self.player_turn()
-            self.check_for_slap()
-            self.is_face_card = self.check_face_card()
-            self.computer_turn()
-        if len(self.computer_deck) == 0:
-            self.actions_label.config(text="You won!")
-        elif len(self.player_deck) == 0:
-            self.actions_label.config(text="You lost!")
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    slaps = GUI(root)
-    root.mainloop()
-
-
-# player turn function
-"the turn that the user takes, check what the current card on the top of the deck is, then decide what to do."
-"1. if top card is a face card, loop putting down cards until the correct number is reached, or the user puts down a face card"
-"2. if out of cards then end the game"
-"3. if it is just a numbered card, user places 1 card on the deck"
-
-
-# computer turn function
-"same as the player turn function, except that if the computer slaps, there will be a built in time delay from 0.2 seconds to 0.5 seconds"
-"delay can change after testing it if its too easy or too hard"
-# Probably don't even need this anymore
-# else: #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-# print("Computer slapped!")
-# for card in self.slappable_deck:
-#   self.computer_deck.insert(0, card)
-# self.slappable_deck.clear()
-
-# slap function/deck check function (This and the slap function could possibly be combined into one for the purposes of testing, and then once the GUI is developed it can go back to being seperate)
-"check the deck after each turn is taken to see if there is a slappable hand"
-"when a slappable hand is detected, either the user or the computer can slap the deck"
-"once deck is slapped, add all cards in play to the winners deck and wait for them to start the next hand"
-
-"""def main():
-    deck = create_deck()
-
-    shuffle_deck(deck)
-    deal_hand(deck)
-    player_deck, computer_deck = deal_hand(deck)
-    while len(player_deck) != 0 and len(computer_deck) != 0:
-        slap(player_deck, computer_deck, slappable_deck)
-        is_face_card = check_face_card(slappable_deck)
-        player_turn(player_deck, slappable_deck, is_face_card)
-        slap(player_deck, computer_deck, slappable_deck)
-        is_face_card = check_face_card(slappable_deck)
-        computer_turn(computer_deck, slappable_deck, is_face_card)
-    if len(computer_deck) == 0:
-        print("You won!")
-    else:
-        print("You lost!")
-
-
-if __name__ == "__main__":
-    main()
-
-
-# Face card checking code, maybe will be its own function"""
-
-"""
-    def face_card_player(self):
-        if self.is_face_card:
-            for card in self.slappable_deck[-1]:
-                if card.value == 11:
-                    
-                elif card.value == 12:
-                    for value in FACE_CARD_PLAY_VALUES[
-                        1
-                    ]:  # make a new temporary list, put the cards in both, loop the input for putting down cards until the list length equals FACE_CARD_PLAY_VALUES[i]?
-                        print(
-                            "Queen detected"
-                        )  # if another face card is put down, clear or detroy the temporary list and make a new one, and also make it the next person's turn
-                        continue
-                elif card.value == 13:
-                    for value in FACE_CARD_PLAY_VALUES[2]:
-                        print("King detected")
-                        continue
-                elif card.value == 14:
-                    for value in FACE_CARD_PLAY_VALUES[3]:
-                        print("Ace detected")
-                        continue
-                else:
-                    print(
-                        "take turn as normal: put down one card, check for a slap, and then go to the computer"
-                    )
-"""
-
-
-"""
-                elif self.most_recent_card.value == 12:
-                    for value in FACE_CARD_PLAY_VALUES[
-                        1
-                    ]:
-                        print(
-                            "Queen detected"
-                        )
-                        continue
-                elif card.value == 13:
-                    for value in FACE_CARD_PLAY_VALUES[2]:
-                        print("King detected")
-                        continue
-                elif card.value == 14:
-                    for value in FACE_CARD_PLAY_VALUES[3]:
-                        print("Ace detected")
-                        continue
-                """
-
-
-"""    def check_face_card(self):
+                
+                    def check_face_card(self):
         self.most_recent_card = self.slappable_deck[-1]
         if self.most_recent_card.value in FACE_CARD_VALUES:
             self.is_face_card = True
             if self.most_recent_card.value == 11:
-                self.is_jack = True
-                self.is_queen_rule = False
-                self.is_king_rule = False
-                self.is_ace_rule = False
+                self.is_jack_rule = True
             elif self.most_recent_card.value == 12:
-                self.is_jack = False
                 self.is_queen_rule = True
-                self.is_king_rule = False
-                self.is_ace_rule = False
             elif self.most_recent_card.value == 13:
-                self.is_jack = False
-                self.is_queen_rule = False
                 self.is_king_rule = True
-                self.is_ace_rule = False
             elif self.most_recent_card.value == 14:
-                self.is_jack = False
-                self.is_queen_rule = False
-                self.is_king_rule = False
                 self.is_ace_rule = True
         else:
             self.is_face_card = False
-            self.is_jack_rule = False
-            self.is_queen_rule = False
-            self.is_king_rule = False
-            self.is_ace_rule = False"""
+
+    def check_face_card_type(self):
+        # should an if statement be here?
+        if self.most_recent_card.value == 11:
+            self.is_jack_rule = True
+        elif self.most_recent_card.value == 12:
+            self.is_queen_rule = True
+        elif self.most_recent_card.value == 13:
+            self.is_king_rule = True
+        elif self.most_recent_card.value == 14:
+            self.is_ace_rule = True"""
