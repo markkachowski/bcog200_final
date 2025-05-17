@@ -17,5 +17,4 @@ Originally I was going to add a face card function, but after playing slaps in r
 Card images: I got the images for the playing cards here https://code.google.com/archive/p/vector-playing-cards/downloads
 
 Also included are:
-3 difficulties with quicker reaction times and a progressively smaller slap button
-The mean time it took for you to slap, displayed for you once you win or lose
+3 difficulties with quicker reaction times and a progressively smaller slap button, and the mean time it took for you to slap, displayed for you once you win or lose
