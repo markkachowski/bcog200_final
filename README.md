@@ -1,6 +1,7 @@
 For my project I coded the card game slaps. In slaps the entire deck is delt out face-down to about 2-8 players, and the objective is to get cards. Each player takes turns putting one card down facing up in the center of the table. You are not allowed to look at your cards until they are placed into the center. The main way to get cards is by slapping the deck when there is a certain pattern of card values: doubles or sandwiches. For example two 4s in a row is a double, and a queen, a 3, and then a queen is a sandwich. Sandwiches can only be 3 cards long. In this version you can also slap when a jack is placed. Once a valid pattern is in play, anybody can slap the deck at anytime, and whoever slaps it first, wins all the cards that were put down for that hand. In addition to the logic and code for the game, I also made a GUI for it.
 
 
+
 Here is a rundown of the code, the script file contains notes on each method in each class
 
 Slap method: a function that allows the player or the computer to slap when a slap is valid.
