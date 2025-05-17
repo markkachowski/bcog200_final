@@ -1,3 +1,5 @@
+# images folder needs to be in the same directory as this file for the code to run
+
 import time
 import tkinter as tk
 import random

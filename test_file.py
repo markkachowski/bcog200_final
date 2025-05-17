@@ -1,3 +1,4 @@
+# images folder needs to be in the same directory as this file for the code to run
 # Not sure what the difference is supposed to be between the script file and the test file so here is the script file again so it can be tested?
 
 import time
