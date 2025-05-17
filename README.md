@@ -18,3 +18,6 @@ Card images: I got the images for the playing cards here https://code.google.com
 
 Also included are:
 3 difficulties with quicker reaction times and a progressively smaller slap button, and the mean time it took for you to slap, displayed for you once you win or lose
+
+
+To run the game you need script_file.py or test_file.py, and the images folder that contains all the card images and they both need to be in the same folder.
