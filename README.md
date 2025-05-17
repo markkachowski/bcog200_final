@@ -4,10 +4,15 @@ For my project I coded the card game slaps. In slaps the entire deck is delt out
 Here is a rundown of the code, the script file contains notes on each method in each class
 
 Slap method: a function that allows the player or the computer to slap when a slap is valid.
+
 Graphical User interface: a GUI that displays the relevant deck as it moves along, and gives the option to slap and place cards.
+
 Card values: values for all the cards.
+
 Originally I was going to add a face card function, but after playing slaps in real life, I decided not to finish it. The main reason for this is that the game would never end. With only 2 players, the face cards add in a huge luck factor, and reduce the skill factor. When playing with a group of people it's fine, but when it gets down to the last two it just never ends. Instead of this, I made jacks slappable, which makes slaps more frequent, and also allows either the player or computer to actually win.
+
 "False slap" method: a punishment if the player tries to slap the deck when there is no slappable pattern, this ended up being part of the slap method.
+
 Card images: I got the images for the playing cards here https://code.google.com/archive/p/vector-playing-cards/downloads
 
 Also included are:
