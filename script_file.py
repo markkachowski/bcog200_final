@@ -9,8 +9,8 @@ from collections import (
     Counter,
 )
 
-Card = namedtuple("Card", ["suit", "value", "index"])
 
+Card = namedtuple("Card", ["suit", "value", "index"])
 
 SUITS = ["♣️", "♦️", "♥️", "♠️"]
 FACE_CARD_VALUES = [11, 12, 13, 14]
@@ -22,10 +22,10 @@ deck = [
         (value, suit) for value in POSSIBLE_NUMBERS_FOR_CARDS for suit in SUITS
     )
 ]
-
+# the above lines were originally taken from the card demo and changed to work with my game
 
 class GUI:
-    def __init__(self, root):
+    def __init__(self, root): # this function initiates the GUI, the difficulty buttons, instructions, and the label that displays what actions happen throughout the game
         self.slaps = Game()
         self.canvas = tk.Canvas(root, width=600, height=400)
         self.canvas.pack()
@@ -72,8 +72,8 @@ class GUI:
         self.displayed_cards = self.slaps.slappable_deck
         self.card_images = []
 
-    def normal_difficulty(self):
-        self.computer_slap_time = random.randint(900, 2000)
+    def normal_difficulty(self): # for normal difficulty I made the slap button huge, and the computer's reaction time is slow, but still a challenge
+        self.computer_slap_time = random.randint(900, 2000) 
         self.computer_place_time = random.randint(550, 1100)
         self.button_size_x = 50
         self.button_size_y = 25
@@ -84,10 +84,10 @@ class GUI:
         self.create_buttons()
         self.actions_label.config(text="Place a card to begin.")
 
-    def hard_difficulty(self):
+    def hard_difficulty(self): #for hard difficulty, the computer reaction time is much quicker, but still beatable with a mouse and some practice. The slap button is also smaller
         self.computer_slap_time = random.randint(
             500, 850
-        )  # probably need a mouse to beat this
+        )
         self.computer_place_time = random.randint(450, 900)
         self.button_size_x = 25
         self.button_size_y = 10
@@ -98,9 +98,9 @@ class GUI:
         self.create_buttons()
         self.actions_label.config(text="Place a card to begin.")
 
-    def insane_difficulty(self):
+    def insane_difficulty(self):# I don't even know if insane difficulty is beatable. Extremely quick reaction times and even smaller slap button.
         self.computer_slap_time = random.randint(
-            300, 550
+            300, 700
         )  # barely within human reflex time, probably beatable on a touchscreen
         self.computer_place_time = random.randint(350, 700)
         self.button_size_x = 10
@@ -112,7 +112,7 @@ class GUI:
         self.create_buttons()
         self.actions_label.config(text="Place a card to begin.")
 
-    def create_buttons(self):
+    def create_buttons(self): #this function creates the gameplay buttons: one to place a card and one to slap
 
         place_card_button = tk.Button(
             root,
@@ -137,7 +137,7 @@ class GUI:
         self.card_count_label = tk.Label(root, text="")
         self.card_count_label.pack(side="top")
 
-    def player_place_card(self):
+    def player_place_card(self): # this function updates the GUI for the player's turn, along with updating it if the player loses
         if len(self.slaps.player_deck) == 0:
             self.actions_label.config(
                 text=f"You Lost!\nYour average time to slap: {sum(self.slaps.slap_reaction_times) / len(self.slaps.slap_reaction_times)} seconds",
@@ -163,7 +163,7 @@ class GUI:
         elif not self.slaps.player_move and len(self.slaps.computer_deck) != 0:
             self.actions_label.config(text="It is not your turn.")
 
-    def computer_place_card(self):
+    def computer_place_card(self): # this functions updates the GUI when the computer places a card
         if len(self.slaps.computer_deck) == 0:
             self.actions_label.config(
                 text=f"You Won!\nYour average time to slap: {sum(self.slaps.slap_reaction_times) / len(self.slaps.slap_reaction_times)} seconds",
@@ -183,9 +183,7 @@ class GUI:
                 self.computer_slap_time, self.update_display_computer_slap
             )
 
-    def update_display_card_placed(
-        self,
-    ):
+    def update_display_card_placed(self): # this function updates which card is being displayed after the computer places a card, or the player places a card
         self.canvas.delete("all")
         self.card_images.clear()
 
@@ -197,7 +195,7 @@ class GUI:
                 self.card_images.append(self.card_picture)
                 self.canvas.create_image(160 * i + 150, 100, image=self.card_picture)
 
-    def update_display_slap(self):
+    def update_display_slap(self): # this function updates the display if the player slaps
         if self.slaps.valid_slap == True:
             self.slaps.slap()
             self.canvas.delete("all")
@@ -215,13 +213,13 @@ class GUI:
                 text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
             )
 
-    def update_display_computer_slap(self):
+    def update_display_computer_slap(self): #this function updates the display if the computer slaps
         if self.slaps.valid_slap == True:
             self.slaps.computer_slap()
             self.canvas.delete("all")
             self.displayed_cards.clear()
             self.actions_label.config(text="Computer Slapped!\nSince you lost the hand it is now the computer's turn...")
-            self.computer_slap_recover_time = random.randint(1700, 2400)
+            self.computer_slap_recover_time = random.randint(1700, 2400) # small break so the game doesn't continue instantly
             self.canvas.after(self.computer_slap_recover_time, self.computer_place_card)
             self.card_count_label.config(
                 text=f"Your cards = {len(self.slaps.player_deck)}\nComputer cards = {len(self.slaps.computer_deck)}\nSlap pile cards = {len(self.slaps.slappable_deck)}"
@@ -229,7 +227,7 @@ class GUI:
 
 
 class Game:
-    def __init__(self):
+    def __init__(self): # creates and shuffles the deck and defines variables needed at the start
 
         self.deck = [
             Card(suit, value, index)
@@ -247,7 +245,7 @@ class Game:
         self.computer_move = False
         self.slap_reaction_times = []
 
-    def check_for_slap(self):
+    def check_for_slap(self): # checks if there is a pattern for a slap
         self.slap_pattern_trio = []
         self.last_three_cards = self.slappable_deck[-3:]
         self.most_recent_card = self.slappable_deck[-1]
@@ -264,7 +262,7 @@ class Game:
             self.computer_slapped = False
             self.player_slapped = False
 
-    def player_turn(self):
+    def player_turn(self): #removes a card from the players deck and puts it in the pile
         if self.player_move:
             self.removed_player_card = self.player_deck.pop()
             self.slappable_deck.append(self.removed_player_card)
@@ -273,14 +271,14 @@ class Game:
             self.player_slapped = False
             self.computer_slapped = False
 
-    def computer_turn(self):
+    def computer_turn(self): # removes a card from the computer's deck and puts it in the pile
         if not self.player_move:
             self.removed_computer_card = self.computer_deck.pop()
             self.slappable_deck.append(self.removed_computer_card)
             self.player_move = True
             self.computer_move = False
 
-    def slap(self):
+    def slap(self): # function for when the player slaps before the computer, causing them to win
         if self.valid_slap == True and self.computer_slapped == False:
             self.time_taken_for_slap = time.time()
             self.reaction_time = self.time_taken_for_slap - self.valid_slap_start_time
@@ -299,7 +297,7 @@ class Game:
             self.slappable_deck.insert(0, self.removed_player_card)
             self.valid_slap = False
 
-    def computer_slap(self):
+    def computer_slap(self): # function when the computer slaps and wins
         if self.valid_slap and not self.player_slapped:
             for card in self.slappable_deck:
                 self.computer_deck.insert(0, card)
