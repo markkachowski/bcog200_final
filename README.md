@@ -21,3 +21,4 @@ Also included are:
 
 
 To run the game you need script_file.py or test_file.py, and the images folder that contains all the card images and they both need to be in the same folder.
+There is already a folder named "images" in the images.zip file so when you extract it don't create another directory for it.
